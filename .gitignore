@@ -221,3 +221,4 @@ __marimo__/
 .nextflow*
 work/
 results/
+/qc_report.tsv

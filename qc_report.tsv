@@ -1,5 +1,0 @@
-level	message
-ERROR	1 amostras da matriz não estão no metadata: ['CTRL01']
-INFO	grupo 'control': 39 amostras
-INFO	grupo 'case': 40 amostras
-INFO	108 genes x 80 amostras
