@@ -2,9 +2,10 @@
   "name": "Rewire",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {
-    "ghcr.io/devcontainers/features/java:1": { "version": "17" },
-    "ghcr.io/devcontainers/features/python:1": { "version": "3.11" }
-  },
+  "ghcr.io/devcontainers/features/java:1": { "version": "17" },
+  "ghcr.io/devcontainers/features/python:1": { "version": "3.11" },
+  "ghcr.io/devcontainers/features/git-lfs:1": {}
+},
   "postCreateCommand": "pip install pandas numpy scipy statsmodels networkx && curl -s https://get.nextflow.io | bash && sudo mv nextflow /usr/local/bin/ && nextflow -version",
   "customizations": {
     "vscode": {
