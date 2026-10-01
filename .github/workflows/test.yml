@@ -1,0 +1,34 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: pip install pandas numpy scipy statsmodels networkx
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: nf-core/setup-nextflow@v2
+
+      - name: Run pipeline on synthetic data
+        run: nextflow run main.nf -profile test
+
+      - name: Check against known truth
+        run: |
+          python tests/check_truth.py \
+            --edges results/test/differential_network/differential_edges.tsv \
+            --truth data/example/truth.tsv
