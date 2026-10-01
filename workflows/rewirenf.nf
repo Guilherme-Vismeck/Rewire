@@ -2,6 +2,7 @@ include { VALIDATE_INPUTS } from '../modules/validate_inputs.nf'
 include { PREPROCESS } from '../modules/preprocess.nf'
 include { BUILD_NETWORK } from '../modules/build_network.nf'
 include { DIFFERENTIAL_NETWORK } from '../modules/differential_correlation.nf'
+include { EXPORT_NETWORK } from '../modules/export_network.nf'
 
 workflow REWIRENF {
     if( !params.expression || !params.metadata || !params.group_a || !params.group_b ) {
@@ -44,5 +45,17 @@ workflow REWIRENF {
         params.group_a,
         params.group_b,
         params.fdr
+    )
+
+    def net_a = BUILD_NETWORK.out.network.filter { f -> f.name == "${params.group_a}_network.tsv" }
+    def net_b = BUILD_NETWORK.out.network.filter { f -> f.name == "${params.group_b}_network.tsv" }
+
+    EXPORT_NETWORK(
+        net_a,
+        net_b,
+        DIFFERENTIAL_NETWORK.out.edges,
+        DIFFERENTIAL_NETWORK.out.genes,
+        params.group_a,
+        params.group_b
     )
 }
