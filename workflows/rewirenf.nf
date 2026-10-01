@@ -1,0 +1,48 @@
+include { VALIDATE_INPUTS } from '../modules/validate_inputs.nf'
+include { PREPROCESS } from '../modules/preprocess.nf'
+include { BUILD_NETWORK } from '../modules/build_network.nf'
+include { DIFFERENTIAL_NETWORK } from '../modules/differential_correlation.nf'
+
+workflow REWIRENF {
+    if( !params.expression || !params.metadata || !params.group_a || !params.group_b ) {
+        error "Parâmetros obrigatórios: --expression, --metadata, --group_a, --group_b"
+    }
+
+    def expression = file(params.expression, checkIfExists: true)
+    def metadata = file(params.metadata, checkIfExists: true)
+
+    VALIDATE_INPUTS(expression, metadata, params.group_col, params.group_a, params.group_b)
+
+    PREPROCESS(
+        expression,
+        metadata,
+        VALIDATE_INPUTS.out.report,
+        params.group_col,
+        params.group_a,
+        params.group_b,
+        params.top_variable_genes
+    )
+
+    def groups = PREPROCESS.out.expr_a
+        .map { f -> tuple(params.group_a, f) }
+        .mix( PREPROCESS.out.expr_b.map { f -> tuple(params.group_b, f) } )
+
+    BUILD_NETWORK(groups, params.method, params.min_cor, params.fdr)
+
+    def corr_a = BUILD_NETWORK.out.correlations
+        .filter { label, f -> label == params.group_a }
+        .map { label, f -> f }
+    def corr_b = BUILD_NETWORK.out.correlations
+        .filter { label, f -> label == params.group_b }
+        .map { label, f -> f }
+
+    DIFFERENTIAL_NETWORK(
+        corr_a,
+        corr_b,
+        PREPROCESS.out.expr_a,
+        PREPROCESS.out.expr_b,
+        params.group_a,
+        params.group_b,
+        params.fdr
+    )
+}
