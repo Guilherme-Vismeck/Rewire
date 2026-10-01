@@ -1,4 +1,4 @@
-# RewireNF
+# Rewire
 
 ![test](https://github.com/Guilherme-Vismeck/Rewire/actions/workflows/test.yml/badge.svg)
 
