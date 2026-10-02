@@ -32,3 +32,9 @@ jobs:
           python tests/check_truth.py \
             --edges results/test/differential_network/differential_edges.tsv \
             --truth data/example/truth.tsv
+
+      - name: Check topology and neighbor turnover
+        run: |
+          python tests/check_topology.py \
+            --turnover results/test/rewiring/neighbor_turnover.tsv \
+            --metrics results/test/topology/network_metrics.tsv

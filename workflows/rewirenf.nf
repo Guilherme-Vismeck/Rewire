@@ -2,6 +2,7 @@ include { VALIDATE_INPUTS } from '../modules/validate_inputs.nf'
 include { PREPROCESS } from '../modules/preprocess.nf'
 include { BUILD_NETWORK } from '../modules/build_network.nf'
 include { DIFFERENTIAL_NETWORK } from '../modules/differential_correlation.nf'
+include { TOPOLOGY } from '../modules/topology.nf'
 include { EXPORT_NETWORK } from '../modules/export_network.nf'
 
 workflow REWIRENF {
@@ -49,6 +50,14 @@ workflow REWIRENF {
 
     def net_a = BUILD_NETWORK.out.network.filter { f -> f.name == "${params.group_a}_network.tsv" }
     def net_b = BUILD_NETWORK.out.network.filter { f -> f.name == "${params.group_b}_network.tsv" }
+
+    TOPOLOGY(
+        net_a,
+        net_b,
+        PREPROCESS.out.filtered,
+        params.group_a,
+        params.group_b
+    )
 
     EXPORT_NETWORK(
         net_a,
