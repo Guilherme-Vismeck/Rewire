@@ -38,3 +38,9 @@ jobs:
           python tests/check_topology.py \
             --turnover results/test/rewiring/neighbor_turnover.tsv \
             --metrics results/test/topology/network_metrics.tsv
+
+      - name: Check bootstrap and stable rewiring
+        run: |
+          python tests/check_bootstrap.py \
+            --stable results/test/rewiring/stable_rewiring.tsv \
+            --edge_stability results/test/bootstrap/edge_stability.tsv

@@ -3,6 +3,7 @@ include { PREPROCESS } from '../modules/preprocess.nf'
 include { BUILD_NETWORK } from '../modules/build_network.nf'
 include { DIFFERENTIAL_NETWORK } from '../modules/differential_correlation.nf'
 include { TOPOLOGY } from '../modules/topology.nf'
+include { BOOTSTRAP } from '../modules/bootstrap.nf'
 include { EXPORT_NETWORK } from '../modules/export_network.nf'
 
 workflow REWIRENF {
@@ -57,6 +58,19 @@ workflow REWIRENF {
         PREPROCESS.out.filtered,
         params.group_a,
         params.group_b
+    )
+
+    BOOTSTRAP(
+        DIFFERENTIAL_NETWORK.out.edges,
+        PREPROCESS.out.expr_a,
+        PREPROCESS.out.expr_b,
+        params.group_a,
+        params.group_b,
+        params.method,
+        params.min_cor,
+        params.bootstrap,
+        params.bootstrap_seed,
+        params.stability_threshold
     )
 
     EXPORT_NETWORK(
