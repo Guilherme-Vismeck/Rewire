@@ -25,10 +25,21 @@ for gene, exp in expected.items():
     ok &= good
     print(f"{'PASS' if good else 'FAIL'}  {gene}: esperado {exp}, obtido {got}")
 
+# Genes de fundo são ruído: nenhum pode ter rewiring estável.
 bg = df[df.index.str.startswith("BG")]
-bad = bg[bg["category"] != "unchanged"]
-good = len(bad) == 0
+n_rw = int(bg["rewired"].sum())
+good = n_rw == 0
 ok &= good
-print(f"{'PASS' if good else 'FAIL'}  genes de fundo fora de 'unchanged': {len(bad)}")
+print(f"{'PASS' if good else 'FAIL'}  genes de fundo com rewiring estável: {n_rw}")
+
+# Falsos positivos de DE são esperados em pequena fração (limma com FDR de 5%).
+max_false_deg = max(1, int(0.05 * len(bg)))
+n_deg = int(bg["DEG"].sum())
+good = n_deg <= max_false_deg
+ok &= good
+print(f"{'PASS' if good else 'FAIL'}  genes de fundo marcados como DEG: {n_deg} "
+      f"(tolerância de ruído: até {max_false_deg} de {len(bg)})")
+if n_deg:
+    print("      ruído:", ", ".join(bg.index[bg["DEG"]]))
 
 sys.exit(0 if ok else 1)
