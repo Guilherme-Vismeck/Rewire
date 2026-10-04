@@ -6,7 +6,7 @@ A modular Nextflow pipeline for identifying differential gene co-expression and 
 
 RewireNF asks which genes change their *relationships* with other genes between conditions, even when their mean expression stays the same.
 
-> **Status:** v0.2. Bootstrap stability, differential expression and enrichment are planned (see Roadmap).
+> **Status:** v0.3. Differential expression and enrichment are planned (see Roadmap).
 
 ## What it does (v0.1)
 
@@ -17,7 +17,8 @@ Starting from a normalized expression matrix and sample metadata:
 3. **BUILD_NETWORK**: computes correlations, p-values and BH-FDR for every gene pair in each group; an edge is present when |r| >= `min_cor` and FDR < `fdr`.
 4. **DIFFERENTIAL_NETWORK**: compares the two networks with the Fisher z-test and classifies each edge as `PRESERVED`, `GAINED`, `LOST`, `STRENGTHENED`, `WEAKENED` or `SIGN_FLIPPED`; summarizes changes per gene.
 5. **TOPOLOGY**: computes per-gene degree, strength, betweenness, closeness, eigenvector centrality and clustering in each network (with deltas between groups) and the neighbor turnover (1 - Jaccard similarity of each gene's neighbors).
-6. **EXPORT_NETWORK**: writes GraphML files for Cytoscape.
+6. **BOOTSTRAP**: resamples the samples of each group with replacement and measures how often each candidate edge reappears (edge stability). Combined with the differential test, it separates raw rewiring from stable rewiring (`bootstrap_support >= stability_threshold`).
+7. **EXPORT_NETWORK**: writes GraphML files for Cytoscape.
 
 ## Input
 
@@ -59,6 +60,9 @@ nextflow run main.nf \
 | `--min_cor` | `0.6` | Minimum \|r\| for an edge |
 | `--fdr` | `0.05` | FDR threshold |
 | `--top_variable_genes` | `3000` | Number of most variable genes kept |
+| `--bootstrap` | `100` | Number of bootstrap replicates |
+| `--bootstrap_seed` | `42` | Random seed for the bootstrap |
+| `--stability_threshold` | `0.8` | Minimum bootstrap support for stable rewiring |
 | `--outdir` | `results` | Output directory |
 
 ## Output
@@ -70,6 +74,8 @@ results/
 ├── networks/                  # <group>_network.tsv
 ├── differential_network/      # differential_edges, gained_edges, lost_edges, sign_flips, gene_rewiring
 ├── rewiring/neighbor_turnover.tsv
+├── rewiring/stable_rewiring.tsv
+├── bootstrap/                 # edge_stability, gene_stability
 ├── topology/network_metrics.tsv
 └── networks_graphml/          # <group_a>.graphml, <group_b>.graphml, rewiring.graphml
 ```
@@ -89,11 +95,12 @@ The repository includes a dev container (`.devcontainer/`) with Java, Python and
 - Starts from a processed expression matrix, not from FASTQ files.
 - The Fisher z-test is exact for Pearson correlation and only approximate with Spearman.
 - Correlation networks estimated from few samples are unstable; the validation step warns when a group has fewer than 30 samples.
+- Bootstrap stability is computed only for candidate edges (present in at least one network) and uses the |r| threshold without FDR, because resampling with replacement makes p-values over-optimistic.
 
 ## Roadmap
 
 - v0.2 (done): topology metrics, neighbor turnover
-- v0.3: bootstrap edge stability, stable rewiring
+- v0.3 (done): bootstrap edge stability, stable rewiring
 - v0.4: differential expression (limma), DEG vs rewiring categories
 - v0.5: communities, GO/KEGG enrichment
 - v1.0: HTML report, Docker, documentation
