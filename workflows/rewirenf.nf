@@ -4,6 +4,8 @@ include { BUILD_NETWORK } from '../modules/build_network.nf'
 include { DIFFERENTIAL_NETWORK } from '../modules/differential_correlation.nf'
 include { TOPOLOGY } from '../modules/topology.nf'
 include { BOOTSTRAP } from '../modules/bootstrap.nf'
+include { DIFFERENTIAL_EXPRESSION } from '../modules/differential_expression.nf'
+include { INTEGRATE_DE_RW } from '../modules/integrate_de_rewiring.nf'
 include { EXPORT_NETWORK } from '../modules/export_network.nf'
 
 workflow REWIRENF {
@@ -72,6 +74,24 @@ workflow REWIRENF {
         params.bootstrap_seed,
         params.stability_threshold
     )
+
+    if( params.run_de ) {
+        DIFFERENTIAL_EXPRESSION(
+            PREPROCESS.out.filtered,
+            metadata,
+            params.group_col,
+            params.group_a,
+            params.group_b,
+            params.de_fdr,
+            params.min_logfc
+        )
+
+        INTEGRATE_DE_RW(
+            DIFFERENTIAL_EXPRESSION.out.results,
+            BOOTSTRAP.out.gene_stability,
+            params.min_rewired_edges
+        )
+    }
 
     EXPORT_NETWORK(
         net_a,

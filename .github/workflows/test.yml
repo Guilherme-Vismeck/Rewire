@@ -24,6 +24,11 @@ jobs:
 
       - uses: nf-core/setup-nextflow@v2
 
+      - name: Install R and limma
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y r-base-core r-bioc-limma
+
       - name: Run pipeline on synthetic data
         run: nextflow run main.nf -profile test
 
@@ -44,3 +49,7 @@ jobs:
           python tests/check_bootstrap.py \
             --stable results/test/rewiring/stable_rewiring.tsv \
             --edge_stability results/test/bootstrap/edge_stability.tsv
+
+      - name: Check DE vs rewiring categories
+        run: |
+          python tests/check_de.py --table results/test/rewiring/de_vs_rewiring.tsv
