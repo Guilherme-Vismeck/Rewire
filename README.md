@@ -6,7 +6,7 @@ A modular Nextflow pipeline for identifying differential gene co-expression and 
 
 RewireNF asks which genes change their *relationships* with other genes between conditions, even when their mean expression stays the same.
 
-> **Status:** v0.1 (core). Bootstrap stability, topology metrics, differential expression and enrichment are planned (see Roadmap).
+> **Status:** v0.2. Bootstrap stability, differential expression and enrichment are planned (see Roadmap).
 
 ## What it does (v0.1)
 
@@ -16,7 +16,8 @@ Starting from a normalized expression matrix and sample metadata:
 2. **PREPROCESS**: removes genes with too many missing values or zero variance, imputes remaining NAs, keeps the most variable genes (variance averaged within groups, so differentially expressed genes are not favored) and splits the groups.
 3. **BUILD_NETWORK**: computes correlations, p-values and BH-FDR for every gene pair in each group; an edge is present when |r| >= `min_cor` and FDR < `fdr`.
 4. **DIFFERENTIAL_NETWORK**: compares the two networks with the Fisher z-test and classifies each edge as `PRESERVED`, `GAINED`, `LOST`, `STRENGTHENED`, `WEAKENED` or `SIGN_FLIPPED`; summarizes changes per gene.
-5. **EXPORT_NETWORK**: writes GraphML files for Cytoscape.
+5. **TOPOLOGY**: computes per-gene degree, strength, betweenness, closeness, eigenvector centrality and clustering in each network (with deltas between groups) and the neighbor turnover (1 - Jaccard similarity of each gene's neighbors).
+6. **EXPORT_NETWORK**: writes GraphML files for Cytoscape.
 
 ## Input
 
@@ -68,6 +69,8 @@ results/
 ├── preprocessing/filtered_expression.tsv
 ├── networks/                  # <group>_network.tsv
 ├── differential_network/      # differential_edges, gained_edges, lost_edges, sign_flips, gene_rewiring
+├── rewiring/neighbor_turnover.tsv
+├── topology/network_metrics.tsv
 └── networks_graphml/          # <group_a>.graphml, <group_b>.graphml, rewiring.graphml
 ```
 
@@ -89,7 +92,7 @@ The repository includes a dev container (`.devcontainer/`) with Java, Python and
 
 ## Roadmap
 
-- v0.2: topology metrics, neighbor turnover
+- v0.2 (done): topology metrics, neighbor turnover
 - v0.3: bootstrap edge stability, stable rewiring
 - v0.4: differential expression (limma), DEG vs rewiring categories
 - v0.5: communities, GO/KEGG enrichment
