@@ -6,7 +6,7 @@ A modular Nextflow pipeline for identifying differential gene co-expression and 
 
 RewireNF asks which genes change their *relationships* with other genes between conditions, even when their mean expression stays the same.
 
-> **Status:** v0.4. Communities and functional enrichment are planned (see Roadmap).
+> **Status:** v0.5. HTML report, Docker and documentation are planned (see Roadmap).
 
 ## What it does (v0.1)
 
@@ -19,7 +19,9 @@ Starting from a normalized expression matrix and sample metadata:
 5. **TOPOLOGY**: computes per-gene degree, strength, betweenness, closeness, eigenvector centrality and clustering in each network (with deltas between groups) and the neighbor turnover (1 - Jaccard similarity of each gene's neighbors).
 6. **BOOTSTRAP**: resamples the samples of each group with replacement and measures how often each candidate edge reappears (edge stability). Combined with the differential test, it separates raw rewiring from stable rewiring (`bootstrap_support >= stability_threshold`).
 7. **DIFFERENTIAL_EXPRESSION** and **INTEGRATE_DE_RW**: runs limma on the analyzed genes and crosses the result with stable rewiring, classifying each gene as `DEG+RW`, `RW_only` (rewired without differential expression), `DEG_only` or `unchanged`.
-8. **EXPORT_NETWORK**: writes GraphML files for Cytoscape.
+8. **COMMUNITIES**: detects modules (Louvain) in each network and flags genes whose module changes between conditions.
+9. **ENRICHMENT** (optional): functional enrichment of the rewired gene lists, with your own gene sets and/or human GO/KEGG.
+10. **EXPORT_NETWORK**: writes GraphML files for Cytoscape.
 
 ## Input
 
@@ -68,6 +70,17 @@ nextflow run main.nf \
 | `--de_fdr` | `0.05` | FDR threshold for differential expression |
 | `--min_logfc` | `0` | Minimum \|logFC\| to call a DEG |
 | `--min_rewired_edges` | `1` | Stable rewired edges needed to call a gene rewired |
+| `--community_resolution` | `1.0` | Louvain resolution |
+| `--community_seed` | `42` | Random seed for Louvain |
+| `--module_overlap_threshold` | `0.5` | Minimum Jaccard overlap to call a gene's module unchanged |
+| `--run_enrichment` | `false` | Run functional enrichment |
+| `--organism` | none | `human` enables GO/KEGG |
+| `--gene_sets` | none | Your own gene sets (TSV with `term`, `gene`, or `.gmt`) |
+| `--gene_id_type` | `SYMBOL` | `SYMBOL`, `ENSEMBL` or `ENTREZID` (human) |
+| `--run_kegg` | `true` | Include KEGG in the human enrichment |
+| `--enrich_fdr` | `0.05` | FDR threshold for enrichment |
+| `--enrich_min_size`, `--enrich_max_size` | `5`, `500` | Gene set size limits |
+| `--enrich_min_overlap` | `2` | Minimum genes in common to report a term |
 | `--outdir` | `results` | Output directory |
 
 ## Output
@@ -82,6 +95,8 @@ results/
 ├── rewiring/stable_rewiring.tsv
 ├── rewiring/de_vs_rewiring.tsv
 ├── differential_expression/DE_results.tsv
+├── communities/               # gene_modules, module_summary
+├── enrichment/                # gene_lists, custom_enrichment, GO, KEGG
 ├── bootstrap/                 # edge_stability, gene_stability
 ├── topology/network_metrics.tsv
 └── networks_graphml/          # <group_a>.graphml, <group_b>.graphml, rewiring.graphml
@@ -89,9 +104,28 @@ results/
 
 `rewiring.graphml` carries per-gene `degree_<group>`, `delta_degree`, `edges_gained`, `edges_lost` and `sign_flips`, and per-edge `status`, `delta_r` and `fdr_diff`.
 
+## Functional enrichment
+
+Enabled with `--run_enrichment` (requires `--run_de true`). Five gene lists are tested for over-representation (hypergeometric test, BH-FDR) against a universe made of the genes analyzed by the pipeline: `rewired_stable`, `RW_only`, `gained_connections`, `lost_connections` and `module_changed`.
+
+- **Your own gene sets (any organism):** `--gene_sets sets.tsv`, a TSV with columns `term` and `gene` (or a `.gmt` file).
+- **Human GO and KEGG:** `--organism human` runs clusterProfiler (GO BP/MF/CC and KEGG). Set `--gene_id_type` to `SYMBOL` (default), `ENSEMBL` or `ENTREZID`. KEGG queries the KEGG web service; if it is unreachable the run continues with an empty KEGG table (`--run_kegg false` skips it).
+
+```bash
+nextflow run main.nf ... --run_enrichment --organism human --gene_sets my_sets.tsv
+```
+
+The human path needs R packages that are installed from Bioconductor (compiled, can take a while):
+
+```bash
+bash scripts/install_r_deps.sh
+```
+
 ## Testing
 
 The synthetic dataset has known ground truth (`data/example/truth.tsv`): GENE1-GENE2 is lost, GENE1-GENE3 is gained, GENE4-GENE5 flips sign and GENE6-GENE7 is preserved. GitHub Actions runs the pipeline on every push and checks these results with `tests/check_truth.py`.
+
+Human GO enrichment is tested locally with `tests/test_enrich_human.sh` (requires the R packages above); the CI runs the custom gene-set enrichment test.
 
 ## Development environment
 
@@ -103,13 +137,14 @@ The repository includes a dev container (`.devcontainer/`) with Java, Python, R 
 - The Fisher z-test is exact for Pearson correlation and only approximate with Spearman.
 - Correlation networks estimated from few samples are unstable; the validation step warns when a group has fewer than 30 samples.
 - Bootstrap stability is computed only for candidate edges (present in at least one network) and uses the |r| threshold without FDR, because resampling with replacement makes p-values over-optimistic.
+- Built-in functional annotation exists only for human; other organisms need `--gene_sets`.
 
 ## Roadmap
 
 - v0.2 (done): topology metrics, neighbor turnover
 - v0.3 (done): bootstrap edge stability, stable rewiring
 - v0.4 (done): differential expression (limma), DEG vs rewiring categories
-- v0.5: communities, GO/KEGG enrichment
+- v0.5 (done): communities, GO/KEGG enrichment, custom gene-set enrichment
 - v1.0: HTML report, Docker, documentation
 
 ## License
