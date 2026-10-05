@@ -53,3 +53,7 @@ jobs:
       - name: Check DE vs rewiring categories
         run: |
           python tests/check_de.py --table results/test/rewiring/de_vs_rewiring.tsv
+
+      - name: Check communities
+        run: |
+          python tests/check_communities.py --modules results/test/communities/gene_modules.tsv

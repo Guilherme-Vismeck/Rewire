@@ -3,6 +3,7 @@ include { PREPROCESS } from '../modules/preprocess.nf'
 include { BUILD_NETWORK } from '../modules/build_network.nf'
 include { DIFFERENTIAL_NETWORK } from '../modules/differential_correlation.nf'
 include { TOPOLOGY } from '../modules/topology.nf'
+include { COMMUNITIES } from '../modules/communities.nf'
 include { BOOTSTRAP } from '../modules/bootstrap.nf'
 include { DIFFERENTIAL_EXPRESSION } from '../modules/differential_expression.nf'
 include { INTEGRATE_DE_RW } from '../modules/integrate_de_rewiring.nf'
@@ -92,6 +93,17 @@ workflow REWIRENF {
             params.min_rewired_edges
         )
     }
+
+    COMMUNITIES(
+        net_a,
+        net_b,
+        PREPROCESS.out.filtered,
+        params.group_a,
+        params.group_b,
+        params.community_resolution,
+        params.community_seed,
+        params.module_overlap_threshold
+    )
 
     EXPORT_NETWORK(
         net_a,
