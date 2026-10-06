@@ -9,6 +9,7 @@ include { DIFFERENTIAL_EXPRESSION } from '../modules/differential_expression.nf'
 include { INTEGRATE_DE_RW } from '../modules/integrate_de_rewiring.nf'
 include { PREPARE_GENE_LISTS; ENRICH_CUSTOM; ENRICH_HUMAN } from '../modules/enrichment.nf'
 include { EXPORT_NETWORK } from '../modules/export_network.nf'
+include { REPORT } from '../modules/report.nf'
 
 workflow REWIRENF {
     if( !params.expression || !params.metadata || !params.group_a || !params.group_b ) {
@@ -158,4 +159,50 @@ workflow REWIRENF {
         params.group_a,
         params.group_b
     )
+
+    if( params.run_report ) {
+        def optional_de = params.run_de
+            ? INTEGRATE_DE_RW.out.table.mix(INTEGRATE_DE_RW.out.summary, DIFFERENTIAL_EXPRESSION.out.results)
+            : channel.empty()
+        def optional_custom = (params.run_de && params.run_enrichment && params.gene_sets)
+            ? ENRICH_CUSTOM.out.results
+            : channel.empty()
+        def optional_human = (params.run_de && params.run_enrichment && params.organism == 'human')
+            ? ENRICH_HUMAN.out.go.mix(ENRICH_HUMAN.out.kegg)
+            : channel.empty()
+
+        def report_inputs = VALIDATE_INPUTS.out.report
+            .mix(
+                DIFFERENTIAL_NETWORK.out.edges,
+                DIFFERENTIAL_NETWORK.out.genes,
+                TOPOLOGY.out.metrics,
+                TOPOLOGY.out.turnover,
+                BOOTSTRAP.out.edge_stability,
+                BOOTSTRAP.out.gene_stability,
+                BOOTSTRAP.out.stable,
+                COMMUNITIES.out.gene_modules,
+                COMMUNITIES.out.module_summary,
+                BUILD_NETWORK.out.network,
+                BUILD_NETWORK.out.correlations.map { _label, f -> f },
+                optional_de,
+                optional_custom,
+                optional_human
+            )
+            .collect()
+
+        def params_text = params.findAll { _k, v -> v != null }
+            .collect { k, v -> "${k}\t${v}" }
+            .sort()
+            .join('\n')
+        def params_file = channel.of(params_text).collectFile(name: 'parameters.tsv', newLine: true)
+
+        REPORT(
+            report_inputs,
+            params_file,
+            params.group_a,
+            params.group_b,
+            workflow.manifest.version,
+            workflow.nextflow.version
+        )
+    }
 }

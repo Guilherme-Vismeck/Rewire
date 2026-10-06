@@ -15,7 +15,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install Python dependencies
-        run: pip install pandas numpy scipy statsmodels networkx
+        run: pip install pandas numpy scipy statsmodels networkx matplotlib
 
       - uses: actions/setup-java@v5
         with:
@@ -57,3 +57,7 @@ jobs:
       - name: Check communities
         run: |
           python tests/check_communities.py --modules results/test/communities/gene_modules.tsv
+
+      - name: Check HTML report
+        run: |
+          python tests/check_report.py --report results/test/report.html
