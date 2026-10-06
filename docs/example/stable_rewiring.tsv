@@ -1,0 +1,4 @@
+gene1	gene2	status	delta_r	fdr_diff	stability_control	stability_case	bootstrap_support
+GENE4	GENE5	SIGN_FLIPPED	-1.831	2.085e-37	1	1	1
+GENE1	GENE2	LOST	-1.057	2.115e-09	1	0	1
+GENE1	GENE3	GAINED	0.8448	2.29e-07	0	1	1

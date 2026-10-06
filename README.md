@@ -6,7 +6,7 @@ A modular Nextflow pipeline for identifying differential gene co-expression and 
 
 RewireNF asks which genes change their *relationships* with other genes between conditions, even when their mean expression stays the same.
 
-> **Status:** v0.7. Final documentation and the v1.0 release are planned (see Roadmap).
+> **Status:** v1.0.
 
 ## What it does (v0.1)
 
@@ -164,7 +164,15 @@ The repository includes a dev container (`.devcontainer/`) with Java, Python, R 
 - v0.5 (done): communities, GO/KEGG enrichment, custom gene-set enrichment
 - v0.6 (done): self-contained HTML report
 - v0.7 (done): Docker image and containerized CI
-- v1.0: final documentation (citation file, usage guide, example output)
+- v1.0 (done): final documentation (citation file, example output)
+
+## Example output
+
+`docs/example/` holds the output of the test run on the synthetic dataset: the HTML report (`report.html`, download it and open it in a browser), the differential edges, the stable rewiring edges, the DE versus rewiring table, the custom enrichment results and the `rewiring.graphml` file for Cytoscape.
+
+## Citation
+
+If you use RewireNF, please cite it with the metadata in `CITATION.cff` (GitHub shows it under "Cite this repository").
 
 ## License
 

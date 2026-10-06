@@ -1,0 +1,121 @@
+<?xml version='1.0' encoding='utf-8'?>
+<graphml xmlns="http://graphml.graphdrawing.org/xmlns" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd">
+  <key id="d13" for="edge" attr.name="dcl" attr.type="boolean" />
+  <key id="d12" for="edge" attr.name="fdr_diff" attr.type="double" />
+  <key id="d11" for="edge" attr.name="delta_r" attr.type="double" />
+  <key id="d10" for="edge" attr.name="r_case" attr.type="double" />
+  <key id="d9" for="edge" attr.name="r_control" attr.type="double" />
+  <key id="d8" for="edge" attr.name="status" attr.type="string" />
+  <key id="d7" for="node" attr.name="dcl_total" attr.type="long" />
+  <key id="d6" for="node" attr.name="sign_flips" attr.type="long" />
+  <key id="d5" for="node" attr.name="edges_lost" attr.type="long" />
+  <key id="d4" for="node" attr.name="edges_gained" attr.type="long" />
+  <key id="d3" for="node" attr.name="delta_degree" attr.type="long" />
+  <key id="d2" for="node" attr.name="degree_case" attr.type="long" />
+  <key id="d1" for="node" attr.name="degree_control" attr.type="long" />
+  <key id="d0" for="node" attr.name="gene" attr.type="string" />
+  <graph edgedefault="undirected">
+    <node id="GENE4">
+      <data key="d0">GENE4</data>
+      <data key="d1">1</data>
+      <data key="d2">1</data>
+      <data key="d3">0</data>
+      <data key="d4">0</data>
+      <data key="d5">0</data>
+      <data key="d6">1</data>
+      <data key="d7">1</data>
+    </node>
+    <node id="GENE5">
+      <data key="d0">GENE5</data>
+      <data key="d1">1</data>
+      <data key="d2">1</data>
+      <data key="d3">0</data>
+      <data key="d4">0</data>
+      <data key="d5">0</data>
+      <data key="d6">1</data>
+      <data key="d7">1</data>
+    </node>
+    <node id="GENE1">
+      <data key="d0">GENE1</data>
+      <data key="d1">1</data>
+      <data key="d2">1</data>
+      <data key="d3">0</data>
+      <data key="d4">1</data>
+      <data key="d5">1</data>
+      <data key="d6">0</data>
+      <data key="d7">2</data>
+    </node>
+    <node id="GENE2">
+      <data key="d0">GENE2</data>
+      <data key="d1">1</data>
+      <data key="d2">0</data>
+      <data key="d3">-1</data>
+      <data key="d4">0</data>
+      <data key="d5">1</data>
+      <data key="d6">0</data>
+      <data key="d7">1</data>
+    </node>
+    <node id="GENE3">
+      <data key="d0">GENE3</data>
+      <data key="d1">0</data>
+      <data key="d2">1</data>
+      <data key="d3">1</data>
+      <data key="d4">1</data>
+      <data key="d5">0</data>
+      <data key="d6">0</data>
+      <data key="d7">1</data>
+    </node>
+    <node id="GENE6">
+      <data key="d0">GENE6</data>
+      <data key="d1">1</data>
+      <data key="d2">1</data>
+      <data key="d3">0</data>
+      <data key="d4">0</data>
+      <data key="d5">0</data>
+      <data key="d6">0</data>
+      <data key="d7">0</data>
+    </node>
+    <node id="GENE7">
+      <data key="d0">GENE7</data>
+      <data key="d1">1</data>
+      <data key="d2">1</data>
+      <data key="d3">0</data>
+      <data key="d4">0</data>
+      <data key="d5">0</data>
+      <data key="d6">0</data>
+      <data key="d7">0</data>
+    </node>
+    <edge source="GENE4" target="GENE5">
+      <data key="d8">SIGN_FLIPPED</data>
+      <data key="d9">0.9230606518737304</data>
+      <data key="d10">-0.9078234322581852</data>
+      <data key="d11">-1.830884084131916</data>
+      <data key="d12">2.084569022439938e-37</data>
+      <data key="d13">True</data>
+    </edge>
+    <edge source="GENE1" target="GENE2">
+      <data key="d8">LOST</data>
+      <data key="d9">0.908342163778416</data>
+      <data key="d10">-0.1486911617532623</data>
+      <data key="d11">-1.0570333255316784</data>
+      <data key="d12">2.1145914897218275e-09</data>
+      <data key="d13">True</data>
+    </edge>
+    <edge source="GENE1" target="GENE3">
+      <data key="d8">GAINED</data>
+      <data key="d9">0.0721278442125526</data>
+      <data key="d10">0.9169758403186972</data>
+      <data key="d11">0.8448479961061446</data>
+      <data key="d12">2.2904322865813626e-07</data>
+      <data key="d13">True</data>
+    </edge>
+    <edge source="GENE6" target="GENE7">
+      <data key="d8">PRESERVED</data>
+      <data key="d9">0.8761100190037393</data>
+      <data key="d10">0.9059100866635736</data>
+      <data key="d11">0.0298000676598343</data>
+      <data key="d12">0.9970030063623562</data>
+      <data key="d13">False</data>
+    </edge>
+  </graph>
+</graphml>

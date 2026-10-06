@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it using these metadata."
+title: "RewireNF"
+abstract: "A modular Nextflow pipeline for identifying robust differential gene co-expression and network rewiring between biological conditions."
+type: software
+authors:
+  - family-names: "Sobrenome"
+    given-names: "Guilherme"
+version: "1.0.0"
+date-released: "2026-10-06"
+license: MIT
+repository-code: "https://github.com/Guilherme-Vismeck/Rewire"
+keywords:
+  - bioinformatics
+  - nextflow
+  - gene co-expression
+  - network rewiring
+  - differential co-expression
