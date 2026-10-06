@@ -1,0 +1,41 @@
+name: docker
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: rewirenf:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: nf-core/setup-nextflow@v2
+
+      - name: Run pipeline in the container
+        run: nextflow run main.nf -profile test,docker
+
+      - name: Run all checks inside the container
+        run: |
+          docker run --rm -v "$PWD":/work -w /work rewirenf:latest bash tests/run_checks.sh
+
+      - name: Check human GO enrichment inside the container
+        run: |
+          docker run --rm -v "$PWD":/work -w /work rewirenf:latest bash tests/test_enrich_human.sh
