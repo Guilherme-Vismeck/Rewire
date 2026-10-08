@@ -1,6 +1,7 @@
 # Rewire
 
 ![test](https://github.com/Guilherme-Vismeck/Rewire/actions/workflows/test.yml/badge.svg)
+![docker](https://github.com/Guilherme-Vismeck/Rewire/actions/workflows/docker.yml/badge.svg)
 
 A modular Nextflow pipeline for identifying differential gene co-expression and network rewiring between two biological conditions.
 
