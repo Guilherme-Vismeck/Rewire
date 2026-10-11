@@ -6,6 +6,7 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
+import matplotlib.patheffects as pe  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 import networkx as nx  # noqa: E402
 import numpy as np  # noqa: E402
@@ -40,6 +41,39 @@ def message_figure(png, svg, text):
     fig.savefig(svg, bbox_inches="tight")
     plt.close(fig)
     print(text)
+
+
+def layout_components(G, seed):
+    """Layout de cada componente conexo, empacotados em prateleiras (sem sobreposição)."""
+    comps = sorted(nx.connected_components(G), key=lambda c: (-len(c), sorted(c)[0]))
+    blocks = []
+    for comp in comps:
+        n = len(comp)
+        nodes = sorted(comp)
+        if n == 1:
+            local, r = {nodes[0]: np.zeros(2)}, 0.7
+        elif n == 2:
+            local, r = {nodes[0]: np.array([-0.6, 0.0]), nodes[1]: np.array([0.6, 0.0])}, 1.0
+        else:
+            r = 1.0 + 0.6 * np.sqrt(n)
+            local = nx.spring_layout(G.subgraph(comp), seed=seed, weight="w",
+                                     k=1.5 / np.sqrt(n), scale=r, iterations=400)
+        blocks.append((local, r))
+
+    gap = 1.2
+    total = sum((2 * r + gap) ** 2 for _, r in blocks)
+    row_width = max(2 * blocks[0][1] + gap, np.sqrt(total * 1.6))
+    pos, x, y, row_h = {}, 0.0, 0.0, 0.0
+    for local, r in blocks:
+        w = 2 * r + gap
+        if x > 0 and x + w > row_width:
+            x, y, row_h = 0.0, y - row_h, 0.0
+        centre = np.array([x + r, y - r])
+        for node, xy in local.items():
+            pos[node] = np.asarray(xy) + centre
+        x += w
+        row_h = max(row_h, w)
+    return pos
 
 
 def main():
@@ -101,15 +135,14 @@ def main():
     G.add_nodes_from(genes)
     for g1, g2, wa, wb in zip(sub["gene1"], sub["gene2"], sub[ra].abs(), sub[rb].abs()):
         G.add_edge(g1, g2, w=max(float(wa), float(wb)))
-    pos = nx.spring_layout(G, seed=args.seed, weight="w",
-                           k=1.6 / np.sqrt(max(len(G), 1)), iterations=400)
+    pos = layout_components(G, args.seed)
 
     cat = {}
     if de is not None and {"gene", "category"} <= set(de.columns):
         cat = dict(zip(de["gene"].astype(str), de["category"]))
+    sizes = {g: 90 + 35 * min(int(counts[g]), 10) for g in genes}
     node_colors = [CATEGORY_COLORS.get(cat.get(g), "#9fb3c8") for g in genes]
-    node_sizes = [140 + 70 * min(int(counts[g]), 12) for g in genes]
-    labels = {g: g for g in genes[:args.max_labels]}
+    node_sizes = [sizes[g] for g in genes]
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 7.4))
     for ax, label, rcol, pcol in ((axes[0], la, ra, pa), (axes[1], lb, rb, pb)):
@@ -121,18 +154,27 @@ def main():
                     pp = part[part["is_stable"] == is_stable]
                     if pp.empty:
                         continue
-                    faint = status in CHANGED and not is_stable
+                    if status == "PRESERVED":
+                        alpha = 0.55
+                    else:
+                        alpha = 0.95 if is_stable else 0.45
                     nx.draw_networkx_edges(
                         G, pos, edgelist=list(zip(pp["gene1"], pp["gene2"])),
-                        width=(0.8 + 3.2 * pp[rcol].abs()).tolist(),
+                        width=(0.6 + 2.6 * pp[rcol].abs()).tolist(),
                         edge_color=STATUS_COLORS[status],
                         style="dashed" if negative else "solid",
-                        alpha=0.4 if faint else 0.9, ax=ax)
-        nx.draw_networkx_nodes(G, pos, node_color=node_colors, node_size=node_sizes,
-                               edgecolors="#33415c", linewidths=0.7, ax=ax)
-        nx.draw_networkx_labels(G, pos, labels=labels, font_size=8, ax=ax)
+                        alpha=alpha, ax=ax)
+        nx.draw_networkx_nodes(G, pos, nodelist=genes, node_color=node_colors,
+                               node_size=node_sizes, edgecolors="#33415c",
+                               linewidths=0.7, ax=ax)
+        for g in genes[:args.max_labels]:
+            r_pt = float(np.sqrt(sizes[g] / np.pi))
+            ax.annotate(g, pos[g], xytext=(0, r_pt + 1.5), textcoords="offset points",
+                        ha="center", va="bottom", fontsize=7.5, zorder=6,
+                        path_effects=[pe.withStroke(linewidth=2.2, foreground="white")])
         ax.set_title(f"{label}  ({len(shown)} edges shown)", fontsize=12)
-        ax.margins(0.12)
+        ax.set_aspect("equal", adjustable="datalim")
+        ax.margins(0.08)
         ax.set_axis_off()
 
     handles = [Line2D([0], [0], color=STATUS_COLORS[s], lw=3, label=t) for s, t in [
@@ -148,7 +190,7 @@ def main():
     fig.legend(handles=handles, loc="lower center", ncol=4, frameon=False, fontsize=9)
     fig.suptitle(f"Co-expression networks of the {len(genes)} most rewired genes ({basis}); "
                  "node size = number of rewired edges", fontsize=11)
-    fig.tight_layout(rect=(0, 0.16, 1, 0.95))
+    fig.tight_layout(rect=(0, 0.14, 1, 0.95))
     fig.savefig(png, dpi=160, bbox_inches="tight")
     fig.savefig(svg, bbox_inches="tight")
     plt.close(fig)
