@@ -61,3 +61,7 @@ jobs:
       - name: Check HTML report
         run: |
           python tests/check_report.py --report results/test/report.html
+
+      - name: Check network figure
+        run: |
+          python tests/check_network_plot.py --png results/test/figures/rewiring_network.png --svg results/test/figures/rewiring_network.svg

@@ -18,6 +18,7 @@ checks = [
     ("genes RW_only listados", "RW_only" in doc and "GENE1" in doc),
     ("enriquecimento presente", "REWIRED_PROGRAM" in doc),
     ("parâmetros registrados", "bootstrap_seed" in doc),
+    ("figura das redes embutida", "Co-expression networks of the most rewired genes" in doc),
 ]
 
 ok = True

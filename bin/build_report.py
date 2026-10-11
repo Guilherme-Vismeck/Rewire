@@ -335,6 +335,17 @@ def main():
     section("Differential co-expression", fig_status(edges), fig_volcano(edges, fdr, la, lb),
             "<h3>Significant differential edges</h3>", table_html(sig))
 
+    net_html = ""
+    net_png = inp / "rewiring_network.png"
+    if net_png.is_file() and net_png.stat().st_size > 0:
+        net_b64 = base64.b64encode(net_png.read_bytes()).decode()
+        net_html = (
+            '<figure><img src="data:image/png;base64,' + net_b64 + '" alt="Rewiring networks">'
+            "<figcaption>Co-expression networks of the most rewired genes in each group. "
+            "Edge colors show the change in status; dashed edges are negative correlations."
+            "</figcaption></figure>"
+        )
+
     top = None
     if genes_rw is not None and not genes_rw.empty:
         top = genes_rw.copy()
@@ -345,7 +356,7 @@ def main():
         if turn is not None and "neighbor_turnover" in turn.columns:
             top = top.merge(turn[["neighbor_turnover"]].reset_index(), on="gene", how="left")
         top = top.sort_values("dcl_total", ascending=False)
-    section("Rewiring and topology", fig_turnover(turn), "<h3>Top rewired genes</h3>", table_html(top))
+    section("Rewiring and topology", net_html, fig_turnover(turn), "<h3>Top rewired genes</h3>", table_html(top))
 
     section("Bootstrap stability", fig_bootstrap(estab, threshold),
             "<h3>Stable rewiring edges</h3>", table_html(stable))

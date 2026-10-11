@@ -9,6 +9,7 @@ include { DIFFERENTIAL_EXPRESSION } from '../modules/differential_expression.nf'
 include { INTEGRATE_DE_RW } from '../modules/integrate_de_rewiring.nf'
 include { PREPARE_GENE_LISTS; ENRICH_CUSTOM; ENRICH_HUMAN } from '../modules/enrichment.nf'
 include { EXPORT_NETWORK } from '../modules/export_network.nf'
+include { PLOT_NETWORK } from '../modules/plot_network.nf'
 include { REPORT } from '../modules/report.nf'
 
 workflow REWIRENF {
@@ -160,6 +161,19 @@ workflow REWIRENF {
         params.group_b
     )
 
+    def de_table = params.run_de
+        ? INTEGRATE_DE_RW.out.table
+        : file("${projectDir}/assets/NO_FILE")
+
+    PLOT_NETWORK(
+        DIFFERENTIAL_NETWORK.out.edges,
+        BOOTSTRAP.out.stable,
+        de_table,
+        params.group_a,
+        params.group_b,
+        params.plot_max_genes
+    )
+
     if( params.run_report ) {
         def optional_de = params.run_de
             ? INTEGRATE_DE_RW.out.table.mix(INTEGRATE_DE_RW.out.summary, DIFFERENTIAL_EXPRESSION.out.results)
@@ -184,6 +198,7 @@ workflow REWIRENF {
                 COMMUNITIES.out.module_summary,
                 BUILD_NETWORK.out.network,
                 BUILD_NETWORK.out.correlations.map { _label, f -> f },
+                PLOT_NETWORK.out.png,
                 optional_de,
                 optional_custom,
                 optional_human

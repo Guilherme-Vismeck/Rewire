@@ -13,4 +13,6 @@ python tests/check_communities.py --modules "$OUT/communities/gene_modules.tsv"
 python tests/check_enrichment.py --enrichment "$OUT/enrichment/custom_enrichment.tsv"
 python tests/check_report.py --report "$OUT/report.html"
 
+python tests/check_network_plot.py --png "$OUT/figures/rewiring_network.png" --svg "$OUT/figures/rewiring_network.svg"
+
 echo "Todos os testes passaram."
