@@ -52,7 +52,7 @@ def layout_components(G, seed):
         if n == 1:
             local, r = {nodes[0]: np.zeros(2)}, 0.7
         elif n == 2:
-            local, r = {nodes[0]: np.array([-0.6, 0.0]), nodes[1]: np.array([0.6, 0.0])}, 1.0
+            local, r = {nodes[0]: np.array([-1.1, 0.0]), nodes[1]: np.array([1.1, 0.0])}, 1.5
         else:
             r = 1.0 + 0.9 * np.sqrt(n)
             local = nx.spring_layout(G.subgraph(comp), seed=seed, weight="w",
