@@ -6,7 +6,6 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.patheffects as pe  # noqa: E402
 import matplotlib.pyplot as plt  # noqa: E402
 import networkx as nx  # noqa: E402
 import numpy as np  # noqa: E402
@@ -55,7 +54,7 @@ def layout_components(G, seed):
         elif n == 2:
             local, r = {nodes[0]: np.array([-0.6, 0.0]), nodes[1]: np.array([0.6, 0.0])}, 1.0
         else:
-            r = 1.0 + 0.6 * np.sqrt(n)
+            r = 1.0 + 0.9 * np.sqrt(n)
             local = nx.spring_layout(G.subgraph(comp), seed=seed, weight="w",
                                      k=1.5 / np.sqrt(n), scale=r, iterations=400)
         blocks.append((local, r))
@@ -144,6 +143,13 @@ def main():
     node_colors = [CATEGORY_COLORS.get(cat.get(g), "#9fb3c8") for g in genes]
     node_sizes = [sizes[g] for g in genes]
 
+    comp_size = {n: len(c) for c in nx.connected_components(G) for n in c}
+    if len(genes) <= 15:
+        label_genes = list(genes)
+    else:
+        label_genes = [g for g in genes if counts[g] >= 2 or comp_size[g] <= 3]
+    label_genes = label_genes[:args.max_labels]
+
     fig, axes = plt.subplots(1, 2, figsize=(14, 7.4))
     for ax, label, rcol, pcol in ((axes[0], la, ra, pa), (axes[1], lb, rb, pb)):
         shown = sub[sub[pcol]]
@@ -167,11 +173,11 @@ def main():
         nx.draw_networkx_nodes(G, pos, nodelist=genes, node_color=node_colors,
                                node_size=node_sizes, edgecolors="#33415c",
                                linewidths=0.7, ax=ax)
-        for g in genes[:args.max_labels]:
+        for g in label_genes:
             r_pt = float(np.sqrt(sizes[g] / np.pi))
             ax.annotate(g, pos[g], xytext=(0, r_pt + 1.5), textcoords="offset points",
                         ha="center", va="bottom", fontsize=7.5, zorder=6,
-                        path_effects=[pe.withStroke(linewidth=2.2, foreground="white")])
+                        bbox=dict(boxstyle="round,pad=0.12", facecolor="white", edgecolor="none", alpha=0.8))
         ax.set_title(f"{label}  ({len(shown)} edges shown)", fontsize=12)
         ax.set_aspect("equal", adjustable="datalim")
         ax.margins(0.08)
