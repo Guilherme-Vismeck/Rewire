@@ -11,7 +11,11 @@ def make_group(n, is_control, n_background, bg_means, rng, rho=0.8):
     def load(f):
         return np.sqrt(rho) * f + np.sqrt(1 - rho) * rng.normal(size=n)
 
-    fa, fb, fc = rng.normal(size=n), rng.normal(size=n), rng.normal(size=n)
+    def factor():
+        f = rng.normal(size=n)
+        return (f - f.mean()) / f.std()  # sem deslocamento de média entre os grupos
+
+    fa, fb, fc = factor(), factor(), factor()
     genes = {}
 
     # Três módulos que existem nas duas condições
